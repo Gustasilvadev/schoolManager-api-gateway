@@ -4,6 +4,7 @@ const PROXY_MAP = [
   { prefix: '/api/students',       target: process.env.MS2_URL },
   { prefix: '/api/teachers',       target: process.env.MS3_URL },
   { prefix: '/api/classes',        target: process.env.MS4_URL },
+  { prefix: '/api/disciplines',    target: process.env.MS4_URL },
   { prefix: '/api/tests',          target: process.env.MS5_URL },
   { prefix: '/api/grades',         target: process.env.MS5_URL },
   { prefix: '/api/finalAverages', target: process.env.MS5_URL },
