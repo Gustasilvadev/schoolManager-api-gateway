@@ -1,0 +1,39 @@
+{
+  "name": "schoolmanager-api-gateway",
+  "version": "1.0.0",
+  "description": "API Gateway do SchoolManager — ponto único de entrada que valida JWT e roteia requisições para os microsserviços.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gustasilvadev/schoolManager-api-gateway.git"
+  },
+  "keywords": [
+    "api-gateway",
+    "express",
+    "jwt",
+    "microservices",
+    "schoolmanager"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Gustasilvadev/schoolManager-api-gateway/issues"
+  },
+  "homepage": "https://github.com/Gustasilvadev/schoolManager-api-gateway#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^7.5.1",
+    "http-proxy-middleware": "^3.0.5",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.10.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
