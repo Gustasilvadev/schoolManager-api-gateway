@@ -52,6 +52,7 @@ Este repositório contém exclusivamente o código do **API Gateway**. Ele é o 
 | `/api/students/*`       | MS2 | 3002  | `MS2_URL`            |
 | `/api/teachers/*`       | MS3 | 3003  | `MS3_URL`            |
 | `/api/classes/*`        | MS4 | 3004  | `MS4_URL`            |
+| `/api/disciplines/*`    | MS4 | 3004  | `MS4_URL`            |
 | `/api/tests/*`          | MS5 | 3005  | `MS5_URL`            |
 | `/api/grades/*`         | MS5 | 3005  | `MS5_URL`            |
 | `/api/finalAverages/*`  | MS5 | 3005  | `MS5_URL`            |
@@ -87,16 +88,33 @@ Headers propagados ao MS alvo após validar o JWT:
 ```
 src/
 ├── config/
-│   └── services.js         # PROXY_MAP + PUBLIC_ROUTES
+│   └── services.js              # PROXY_MAP + PUBLIC_ROUTES
 ├── middlewares/
-│   ├── corsConfig.js       # CORS configurado por env
-│   ├── rateLimiter.js      # express-rate-limit
-│   ├── authMiddleware.js   # valida JWT, propaga x-user-id/role
-│   └── errorHandler.js     # captura erros não tratados
+│   ├── corsConfig.js            # CORS configurado por env
+│   ├── rateLimiter.js           # express-rate-limit
+│   ├── internalRouteBlocker.js  # bloqueia rotas internas service-to-service
+│   ├── authMiddleware.js        # valida JWT, propaga x-user-id/role
+│   └── errorHandler.js          # captura erros não tratados
 ├── proxy/
-│   └── proxyRouter.js      # monta http-proxy-middleware por prefixo
-└── server.js               # entry point
+│   └── proxyRouter.js           # monta http-proxy-middleware por prefixo
+├── utils/
+│   └── constants.js             # HTTP_STATUS, MESSAGES (TOKEN_MISSING, TOKEN_INVALID, FORBIDDEN)
+└── server.js                    # entry point
 ```
+
+### 🔒 Bloqueio de rotas internas (Service-to-Service)
+
+Alguns endpoints dos microsserviços são consumidos estritamente de forma interna, entre os processos, sem a presença de um JWT. O caso principal é o `GET /teachers/byUser/:userId`, consumido pelo MS1 durante o fluxo de **login** (momento em que o JWT do usuário ainda não foi emitido).
+
+Para garantir que essas rotas jamais fiquem expostas publicamente, o API Gateway utiliza o middleware `internalRouteBlocker` antes de realizar o proxy. Qualquer requisição originada externamente cujo path corresponda aos `INTERNAL_ROUTE_PATTERNS` é interceptada.
+
+- **Exemplo bloqueado:** `/api/teachers/byUser/*`
+- **Comportamento:** O Gateway retorna **404 Not Found** (evitando o vazamento da existência da rota para scanners externos) e a requisição é encerrada.
+
+A chamada legítima (MS1 → MS3) não é afetada por este bloqueio, pois a comunicação ocorre diretamente via rede interna dos containers (utilizando a variável de ambiente `TEACHER_SERVICE_URL`), sem passar pelo API Gateway.
+
+> **💡 Nota de Decisão Arquitetural (Trade-off):** 
+> Optou-se pelo bloqueio de borda no Gateway por ser uma solução leve e pragmática para o escopo do projeto.
 
 ---
 
@@ -114,6 +132,7 @@ src/
 | Status | Significado                                                                  |
 |--------|------------------------------------------------------------------------------|
 | `200`  | Resposta bem-sucedida (encaminhada do MS alvo)                               |
-| `401`  | `TOKEN_MISSING` ou `TOKEN_INVALID` — bloqueado pelo `authMiddleware`         |
+| `401`  | `"Token não fornecido"` ou `"Token inválido ou expirado"` — bloqueado pelo `authMiddleware` (mensagens vêm de `MESSAGES` em `utils/constants.js`) |
+| `404`  | Rota interna serviço-a-serviço acessada externamente — bloqueada pelo `internalRouteBlocker` |
 | `429`  | Rate limit excedido — bloqueado pelo `rateLimiter`                           |
 | `503`  | MS alvo indisponível, timeout ou prefixo sem URL configurada                 |
