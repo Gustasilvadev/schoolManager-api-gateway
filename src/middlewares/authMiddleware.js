@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { PUBLIC_ROUTES } = require('../config/services');
+const { HTTP_STATUS, MESSAGES } = require('../utils/constants');
 
 const isPublic = (req) =>
   PUBLIC_ROUTES.some((r) => r.method === req.method && r.path === req.path);
@@ -9,12 +10,12 @@ module.exports = (req, res, next) => {
 
   const header = req.headers.authorization;
   if (!header || !header.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'TOKEN_MISSING' });
+    return res.status(HTTP_STATUS.UNAUTHORIZED).json({ error: MESSAGES.TOKEN_MISSING });
   }
 
   const token = header.slice('Bearer '.length).trim();
   if (!token) {
-    return res.status(401).json({ error: 'TOKEN_MISSING' });
+    return res.status(HTTP_STATUS.UNAUTHORIZED).json({ error: MESSAGES.TOKEN_MISSING });
   }
 
   try {
@@ -23,6 +24,6 @@ module.exports = (req, res, next) => {
     req.headers['x-user-role'] = decoded.role ?? '';
     return next();
   } catch (err) {
-    return res.status(401).json({ error: 'TOKEN_INVALID' });
+    return res.status(HTTP_STATUS.UNAUTHORIZED).json({ error: MESSAGES.TOKEN_INVALID });
   }
 };
