@@ -4,6 +4,7 @@ const morgan = require('morgan');
 
 const corsConfig = require('./middlewares/corsConfig');
 const rateLimiter = require('./middlewares/rateLimiter');
+const internalRouteBlocker = require('./middlewares/internalRouteBlocker');
 const authMiddleware = require('./middlewares/authMiddleware');
 const errorHandler = require('./middlewares/errorHandler');
 const mountProxy = require('./proxy/proxyRouter');
@@ -14,14 +15,15 @@ app.use(corsConfig);
 app.use(morgan('combined'));
 app.use(rateLimiter);
 
-// Dois paths para atender tanto CMD (/health) quanto Swagger UI dos MS que prefixa com /api.
+// Bloqueio rotas internas (chamadas serviço-a-serviço).
+app.use(internalRouteBlocker);
+
 const healthHandler = (req, res) => {
   res.json({ status: 'ok', service: 'api-gateway', ts: Date.now() });
 };
 app.get('/health', healthHandler);
 app.get('/api/health', healthHandler);
 
-// Body parser fica DEPOIS do proxy: http-proxy-middleware precisa do stream original para encaminhar POST/PUT.
 app.use(authMiddleware);
 mountProxy(app);
 
