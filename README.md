@@ -104,14 +104,13 @@ src/
 
 ### 🔒 Bloqueio de rotas internas (Service-to-Service)
 
-Alguns endpoints dos microsserviços são consumidos estritamente de forma interna, entre os processos, sem a presença de um JWT. O caso principal é o `GET /teachers/byUser/:userId`, consumido pelo MS1 durante o fluxo de **login** (momento em que o JWT do usuário ainda não foi emitido).
+Alguns endpoints dos microsserviços são consumidos estritamente de forma interna, entre os processos, sem a presença de um JWT, devido ao usuario ainda nao estar logado.
 
-Para garantir que essas rotas jamais fiquem expostas publicamente, o API Gateway utiliza o middleware `internalRouteBlocker` antes de realizar o proxy. Qualquer requisição originada externamente cujo path corresponda aos `INTERNAL_ROUTE_PATTERNS` é interceptada.
+Para garantir que essas rotas jamais fiquem expostas publicamente, o API Gateway utiliza o middleware `internalRouteBlocker` antes de realizar o proxy.
 
-- **Exemplo bloqueado:** `/api/teachers/byUser/*`
 - **Comportamento:** O Gateway retorna **404 Not Found** (evitando o vazamento da existência da rota para scanners externos) e a requisição é encerrada.
 
-A chamada legítima (MS1 → MS3) não é afetada por este bloqueio, pois a comunicação ocorre diretamente via rede interna dos containers (utilizando a variável de ambiente `TEACHER_SERVICE_URL`), sem passar pelo API Gateway.
+A chamada legítima (MS1 → MS3) não é afetada por este bloqueio, pois a comunicação ocorre diretamente via rede interna dos containers, sem passar pelo API Gateway.
 
 > **💡 Nota de Decisão Arquitetural (Trade-off):** 
 > Optou-se pelo bloqueio de borda no Gateway por ser uma solução leve e pragmática para o escopo do projeto.
