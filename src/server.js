@@ -20,8 +20,6 @@ app.use(rateLimiter);
 // Bloqueio rotas internas (chamadas serviço-a-serviço).
 app.use(internalRouteBlocker);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 const healthHandler = (req, res) => {
@@ -30,8 +28,8 @@ const healthHandler = (req, res) => {
 app.get('/health', healthHandler);
 app.get('/api/health', healthHandler);
 
-// Rotas de auth tratadas diretamente (login seta cookie, logout limpa cookie).
-app.use('/api/auth', authRoutes);
+
+app.use('/api/auth', express.json(), express.urlencoded({ extended: true }), authRoutes);
 
 app.use(authMiddleware);
 mountProxy(app);
