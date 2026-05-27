@@ -11,8 +11,7 @@ const PROXY_MAP = [
   { prefix: '/api/notices',        target: process.env.MS6_URL }
 ];
 
-const PUBLIC_ROUTES = [
-  { method: 'POST', path: '/api/auth/login' }
-];
+// Login e logout são tratados diretamente pelo Gateway (authRoutes.js), não chegam ao authMiddleware.
+const PUBLIC_ROUTES = [];
 
 module.exports = { PROXY_MAP, PUBLIC_ROUTES };
