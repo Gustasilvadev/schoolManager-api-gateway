@@ -13,6 +13,8 @@ const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 app.use(corsConfig);
 app.use(morgan('combined'));
 app.use(rateLimiter);

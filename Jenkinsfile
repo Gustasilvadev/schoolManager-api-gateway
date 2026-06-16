@@ -6,7 +6,7 @@ pipeline {
                 checkout([$class: 'GitSCM', branches: [[name: '*/main']], useRemoteConfigs: [[url: 'https://github.com/Gustasilvadev/schoolManager-api-gateway']]])
             }
         }
-
+        
         stage('Instalar Dependências') {
             steps {
                 bat 'npm ci'
